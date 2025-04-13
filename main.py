@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, constr
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
@@ -12,7 +12,7 @@ app = FastAPI(title="Hiring Assistant AI")
 
 class TechStackRequest(BaseModel):
     name: str
-    email: str
+    email: EmailStr
     number: int
     position: str
     experience: str

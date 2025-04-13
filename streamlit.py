@@ -1,9 +1,9 @@
 import streamlit as st
 import requests
+import re
 
 st.set_page_config(page_title="Hiring Assistant Chatbot", page_icon="💬")
 st.title("🤖 Hiring Assistant Chatbot")
-
 
 info_questions = [
     "What's your full name?",
@@ -16,16 +16,13 @@ info_questions = [
 
 # Initialize session state
 if "step" not in st.session_state:
-    st.session_state.step = -1  
+    st.session_state.step = -1
 if "answers" not in st.session_state:
     st.session_state.answers = []
-
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-
 if "interview_questions" not in st.session_state:
     st.session_state.interview_questions = []
-
 if "interview_step" not in st.session_state:
     st.session_state.interview_step = 0
 
@@ -55,11 +52,27 @@ elif st.session_state.step < len(info_questions):
     if user_input is not None:
         user_input = user_input.strip()
 
-        # Check if input is empty
         if user_input == "":
-            st.warning(" Please provide an answer to proceed.")
-        elif current_question == "What's your mobile number?" and not user_input.isdigit():
-            st.warning("Please enter a valid mobile number (digits only).")
+            st.warning("Please provide an answer to proceed.")
+        
+        elif current_question == "What's your email address?":
+            if not re.match(r"[^@]+@[^@]+\.[^@]+", user_input):
+                st.warning("Please enter a valid email address.")
+            else:
+                st.session_state.chat_history.append({"role": "user", "content": user_input})
+                st.session_state.answers.append(user_input)
+                st.session_state.step += 1
+                st.rerun()
+
+        elif current_question == "What's your mobile number?":
+            if not user_input.isdigit() or len(user_input) != 10:
+                st.warning("Please enter a valid 10-digit mobile number.")
+            else:
+                st.session_state.chat_history.append({"role": "user", "content": user_input})
+                st.session_state.answers.append(user_input)
+                st.session_state.step += 1
+                st.rerun()
+
         else:
             st.session_state.chat_history.append({"role": "user", "content": user_input})
             st.session_state.answers.append(user_input)
@@ -86,13 +99,12 @@ elif st.session_state.interview_questions == []:
         res.raise_for_status()
         q_text = res.json()["questions"]
 
-        # Clean and store questions
         questions = [q.strip() for q in q_text.split('\n') if q.strip()]
         st.session_state.interview_questions = questions
         st.rerun()
 
     except Exception as e:
-        st.error(f" Error: {e}")
+        st.error(f"❌ Error generating questions: {e}")
 
 # Interview questions one by one
 elif st.session_state.interview_step < len(st.session_state.interview_questions):
@@ -111,13 +123,13 @@ elif st.session_state.interview_step < len(st.session_state.interview_questions)
 
 # Final summary and thank you
 else:
-    summary = " **Here's a summary of your submitted information:**\n\n"
+    summary = "### ✅ Here's a summary of your submitted information:\n\n"
     for i, answer in enumerate(st.session_state.answers):
         summary += f"- **{info_questions[i]}**: {answer}\n"
 
     st.session_state.chat_history.append({"role": "assistant", "content": summary})
-    st.session_state.step += 1  # Just to avoid repeating
+    st.session_state.step += 1
 
     with st.chat_message("assistant"):
         st.markdown(summary)
-        st.markdown("Thank you for completing the interview! We’ll review your responses and get back to you soon. Good luck! ")
+        st.markdown("🎉 Thank you for completing the interview! We’ll review your responses and get back to you soon. Good luck!")
