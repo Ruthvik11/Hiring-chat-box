@@ -1,0 +1,9 @@
+# For FastAPI
+fastapi
+uvicorn
+openai
+python-dotenv
+
+# For Streamlit
+streamlit
+requests
