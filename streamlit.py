@@ -82,7 +82,7 @@ elif st.session_state.interview_questions == []:
         st.markdown("Great! Now generating your interview questions...")
 
     try:
-        res = requests.post("http://127.0.0.1:8000/generate-questions", json=payload)
+        res = requests.post("https://hirring-assistant.onrender.com/generate-questions", json=payload)
         res.raise_for_status()
         q_text = res.json()["questions"]
 
